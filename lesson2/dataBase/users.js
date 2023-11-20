@@ -1,1 +1,0 @@
-module.exports=[{name:'Victor'},{name:'Nata'},{name:'Karina'},{name:'Marina'},{name:'Igor'},{name:'Natalija'}]

@@ -1,138 +1,87 @@
 const express = require('express');
-const users=require('./dataBase/users');
-const axios=require('axios')
+const cars=require('./dataBase/cars');
 const app = express();
-const fs=require('fs/promises')
 
-//
-// app.get('/',async (req,res)=>{
-//     console.log(req);
-//
-//     // res.json('HELLO EXPRESS');
-//
-// //     res.write('HELLO EXPRESS');
-// //     res.write('HELLO EXPRESS');
-// //     res.write('HELLO EXPRESS');
-// // res.end()
-//
-//     res.json('NOT FOUND')
-//
-//     console.log('TEST')
-//     // res.end();
-// })
-
-//ends points завжди в множині
-app.get('/users',(req,res)=>{
-    res.json(users)
+app.get('/',(req,res)=>{
+    res.json('HELLO');
 })
 
-app.get('/users/1',(req,res)=>{
-    console.log('Customer want to get user with ID 1');
-
-    res.json(users[1]);
+app.get('/cars',(req,res)=>{
+    res.json(cars)
 })
-
-//коли ми пишемо в url : ,то node розуміє,що то буде якась змінна-під псевдонімом може бути все,що завгодно.
-    //'/users/:userId'- userId=це endpoint
-
 
 
 //Create
-app.get ('/users/create',(req,res)=>{
-users.push({
-    name:'TEST',
-    age:Math.random()*100,
-});
+app.get ('/cars/create',(req,res)=>{
+cars.push( {id:111,brand:'BMW',year:2023});
 
 res.status(201).json('Users was created');
 })
-app.get('/moms',(req,res)=>{
-    res.json([{age:35},{age:65},{age:75}])
-})
 
-app.get('/users',async(req,res)=>{
-    let buffer=await fs.readFile('sdsds');
-    res.json(buffer.toString())
-})
 
-app.get('/users/:userId/delete',(req,res)=>{
-    const userIndex=+req.params.userId;
 
-    if(isNaN(userIndex) || userIndex < 0){
+app.get('/cars/:carId/delete',(req,res)=>{
+    const carIndex=+req.params.carId;
+
+   if(isNaN(carIndex) || carIndex < 0){
         res.status(400).json('Please enter valid ID');
-        return;
+         return;
     }
 
-    console.log(userIndex);
+    const car=cars[carIndex];
 
-    console.log(req.params);
-    //console.log(req.params-зберігаються всі динамічні значення з url )
-    console.log('Customer want to get user with id 1');
-
-    const user=users[userIndex];
-
-    if(!user){
+    if(!car){
         res.status(404).json(`User with ID ${userIndex} is not found`);
         return;
     }
 
-    res.json(user)
+    const filteredCars=cars.filter((car,idx)=>idx!==carIndex)
+     res.json(filteredCars)
 })
 
-app.get('/users/:userId/update',(req,res)=>{
-    const userIndex=+req.params.userId;
+app.get('/cars/:carId/update',(req,res)=>{
+    const carIndex=+req.params.carId;
 
-    if(isNaN(userIndex) || userIndex < 0){
+    if(isNaN(carIndex) || carIndex < 0){
+        res.status(400).json('Please enter valid ID');
+        return;
+    }
+    const car=cars[carIndex];
+
+    if(!car){
+        res.status(404).json(`User with ID ${carIndex} is not found`);
+        return;
+    }
+
+const updatedCar={
+        ...car,
+    id:90,
+    brand:'NewBMW',
+    year:1990,
+    }
+
+    cars[carIndex] = updatedCar;
+    res.json(updatedCar)
+})
+
+app.get('/cars/:carId',(req,res)=>{
+    const carIndex=+req.params.carId;
+
+    if(isNaN(carIndex) || carIndex < 0){
         res.status(400).json('Please enter valid ID');
         return;
     }
 
-    console.log(userIndex);
+    const car=cars[carIndex];
 
-    console.log(req.params);
-    //console.log(req.params-зберігаються всі динамічні значення з url )
-    console.log('Customer want to get user with id 1');
 
-    const user=users[userIndex];
 
-    if(!user){
-        res.status(404).json(`User with ID ${userIndex} is not found`);
+    if(!car){
+        res.status(404).json(`User with ID ${carIndex} is not found.jhkjhljl`);
         return;
     }
 
-    res.json(user)
-})
-
-app.get('/users/:userId',(req,res)=>{
-    const userIndex=+req.params.userId;
-
-    if(isNaN(userIndex) || userIndex < 0){
-        res.status(400).json('Please enter valid ID');
-        return;
-    }
-
-    console.log(userIndex);
-
-    console.log(req.params);
-    //console.log(req.params-зберігаються всі динамічні значення з url )
-    console.log('Customer want to get user with id 1');
-
-    const user=users[userIndex];
-
-    if(!user){
-        res.status(404).json(`User with ID ${userIndex} is not found`);
-        return;
-    }
-
-    res.json(user)
-})
-
-app.get('/',async (req,res)=>{
-    console.log(req);
-
-    const resp=await axios.get('https://jsonplaceholder.typicode.com/users');
-
-    res.status(resp.status).json(resp.data);
+    res.json(car)
 })
 
 app.listen(5000,()=>{
