@@ -1,97 +1,69 @@
-const cars = require('../dataBase/cars');
+const Car = require('../dataBase/Car');
+const CError = require('../error/CustomError')
 
-function getAllCars(req, res) {
+async function getAllCars(req, res, next) {
     try {
+        const cars = await Car.find();
+
         res.json(cars);
     } catch (e) {
-        res.status(400).json(e.message || "Unknown Error")
+        next(e);
     }
 }
 
-function getById(req, res) {
+async function getById(req, res, next) {
     try {
-        const carIndex = +req.params.carId;
 
-        if (isNaN(carIndex) || carIndex < 0) {
-            res.status(400).json("Please enter valid Id");
-            return;
-        }
-        const car = cars[carIndex];
+        const {carId = ''} = req.params;
 
-        if (!car) {
-            res.status(404).json('User with ID ${carIndex} is not found.')
-            return;
-        }
+        const car = await Car.findOne({_id: carId})
 
         res.json(car);
     } catch (e) {
-        res.status(400).json(e.message || "Unknown Error")
+        next(e);
     }
 }
 
-function createCar(req, res) {
+async function createCar(req, res, next) {
     try {
-        cars.push({
-            id: 888,
-            brand: "VOLVO",
-            yesr: 1999,
-        });
+        await Car.create(req.body);
 
         res.status(201).json("User was created");
     } catch (e) {
-        res.status(400).json(e.message || "Unknown Error");
+        next(e)
     }
 }
 
-function deleteCar(req, res) {
+async function deleteCar(req, res, next) {
     try {
-        const carIndex = +req.params.carId;
+        const {carId = ""} = req.params;
 
-        if (isNaN(carIndex) || carIndex < 0) {
-            res.status(400).json("Please enter valid ID");
-            return;
-        }
+        await Car.deleteOne({_id: carId});
 
-        const car = cars[carIndex];
+        res.status(201).json("User was deleted")
 
-        if (!car) {
-            res.status(404).json(`User with ID ${userIndex} is not found`);
-            return;
-        }
-
-        const filteredCars = cars.filter((car, idx) => idx !== carIndex);
-        res.json(filteredCars);
     } catch (e) {
-        res.status(400).json(e.message || "Unknown Error");
+        next(e)
     }
 }
 
-function updateCar(req, res) {
+async function updateCar(req, res, next) {
     try {
-        const carIndex = +req.params.carId;
+        const {carId = ""} = req.params;
+        await Car.findOneAndUpdate(
+            {_id: carId},
+            {
+                $set: {
+                    'brand': req.body.brand,
+                    'year': req.body.year
+                }
+            },
+            {new: true}
+        );
 
-        if (isNaN(carIndex) || carIndex < 0) {
-            res.status(400).json("Please enter valid ID");
-            return;
-        }
-        const car = cars[carIndex];
-
-        if (!car) {
-            res.status(404).json(`User with ID ${carIndex} is not found`);
-            return;
-        }
-
-        const updatedCar = {
-            ...car,
-            id: 90,
-            brand: "NewBMW",
-            year: 1990,
-        };
-
-        cars[carIndex] = updatedCar;
-        res.json(updatedCar);
+        res.status(201).json("User was Updated")
     } catch (e) {
-        res.status(400).json(e.message || "Unknown Error");
+        next(e)
     }
 }
 
