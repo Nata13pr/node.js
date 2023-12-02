@@ -22,7 +22,7 @@ module.exports = {
         try {
             const carIndex = req.params.carId;
 
-            if (!isNaN(carIndex)|| carIndex < 0) {
+            if (carIndex !==24 ) {
                 throw new CError("Please enter valid Id");
             }
             next();
@@ -35,7 +35,6 @@ module.exports = {
             const {carId = ''} = req.params;
 
             const car = await Car.findOne({_id: carId})
-            console.log(car)
 
             if (!car) {
                 throw new CError(`User with ID ${carId} is not found.`)
