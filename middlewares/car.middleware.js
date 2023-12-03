@@ -1,10 +1,11 @@
 const CError = require('../error/CustomError');
 const Car = require('../dataBase/Car');
+const carValidator=require('../validators/car.validator')
 
 module.exports = {
     checkCarOnCrease: (req, res, next) => {
         try {
-            const {brand = '', year = ''} = req.body;
+            const {brand = '', year = ''} = carValidator.newCarValidator.validate(req.body);
 
             if (!brand || !year) {
                 throw new CError('Some field is missing');
