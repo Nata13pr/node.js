@@ -1,11 +1,11 @@
 const CError = require('../error/CustomError');
 const Car = require('../dataBase/Car');
-const carValidator=require('../validators/car.validator')
+const carValidator = require('../validators/car.validator')
 
 module.exports = {
     checkCarOnCrease: (req, res, next) => {
         try {
-            const {brand = '', year = ''} = carValidator.newCarValidator.validate(req.body);
+            const {value:{brand="",year=""}} = carValidator.newCarValidator.validate(req.body);
 
             if (!brand || !year) {
                 throw new CError('Some field is missing');
@@ -23,7 +23,7 @@ module.exports = {
         try {
             const carIndex = req.params.carId;
 
-            if (carIndex !==24 ) {
+            if (carIndex !== 24) {
                 throw new CError("Please enter valid Id");
             }
             next();
@@ -31,8 +31,8 @@ module.exports = {
             next(e)
         }
     },
-    checkIfCarAvailable:async (req,res,next)=>{
-        try{
+    checkIfCarAvailable: async (req, res, next) => {
+        try {
             const {carId = ''} = req.params;
 
             const car = await Car.findOne({_id: carId})
@@ -42,7 +42,7 @@ module.exports = {
 
             }
             next()
-        }catch (e) {
+        } catch (e) {
             next(e)
         }
     }
