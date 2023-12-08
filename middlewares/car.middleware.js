@@ -1,3 +1,5 @@
+const { Types } = require("mongoose");
+
 const CError = require('../error/CustomError');
 const Car = require('../dataBase/Car');
 const carValidator = require('../validators/car.validator')
@@ -21,12 +23,14 @@ module.exports = {
     },
     checkCarById: (req, res, next) => {
         try {
-            const carIndex = req.params.carId;
+            const {  carId } = req.params;
 
-            if (carIndex !== 24) {
-                throw new CError("Please enter valid Id");
+            if (!Types.ObjectId.isValid( carId)) {
+                return new CError("Please enter valid Id");
             }
+
             next();
+
         } catch (e) {
             next(e)
         }
