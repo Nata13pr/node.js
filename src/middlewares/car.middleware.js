@@ -40,7 +40,6 @@ module.exports = {
     },
     checkIsCarPresent : async ( req, res, next ) => {
         try {
-
             const { email } = req.body;
 
             const carByEmail = await Car.findOne( { email } );

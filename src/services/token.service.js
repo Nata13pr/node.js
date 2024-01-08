@@ -3,7 +3,7 @@ const jwt = require( 'jsonwebtoken' );
 const {
     ACCESS_TOKEN_SECRET,
     REFRESH_TOKEN_SECRET,
-} = require( '../configs/configs' );
+} = require( '../constants/configs' );
 const CustomError = require( '../error/CustomError' );
 
 function generateAuthTokens( payload = {} ) {

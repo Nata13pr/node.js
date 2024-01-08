@@ -1,7 +1,8 @@
+require( 'dotenv' ).config();
 const express = require( 'express' );
 const mongoose = require( 'mongoose' );
 
-const { MONGO_URL,PORT } = require( './configs/configs.js' );
+const { MONGO_URL,PORT } = require( './constants/configs.js' );
 const authRouter = require( './routes/auth.router' );
 const carRouter = require( './routes/car.router' );
 
