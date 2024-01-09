@@ -9,10 +9,10 @@ const CustomError = require( '../error/CustomError' );
 
 module.exports = {
     sendEmail : async ( userMail = '', emailAction = '', locals = {} ) => {
-
+        console.log( process.cwd() );
         const templateParser = new EmailTemplates( {
             views : {
-                root : path.join( process.cwd(),'src', 'email-templates' ),
+                root : path.join( process.cwd(),'src','email-templates' ),
             },
         } );
 

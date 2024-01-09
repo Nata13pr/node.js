@@ -3,7 +3,9 @@ const jwt = require( 'jsonwebtoken' );
 const {
     ACCESS_TOKEN_SECRET,
     REFRESH_TOKEN_SECRET,
+    FORGOT_PASS_ACTION_SECRET,
 } = require( '../constants/configs' );
+const { FORGOT_PASSWORD } = require( '../constants/email.action.enum' );
 const CustomError = require( '../error/CustomError' );
 
 function generateAuthTokens( payload = {} ) {
@@ -19,6 +21,38 @@ function generateAuthTokens( payload = {} ) {
         access_token,
         refresh_token,
     };
+}
+
+function generateActionToken( actionType,payload = {} ){
+    let secretWord = '';
+    let expiresIn = '7d';
+
+    switch( actionType ){
+        case FORGOT_PASSWORD:
+            secretWord = FORGOT_PASS_ACTION_SECRET;
+            break;
+
+        default:
+            throw new CustomError( 'Wrong action type',500 );
+    }
+
+    return jwt.sign( payload,secretWord,{
+        expiresIn
+    } );
+}
+
+function checkActionToken( token = '',actionType ){
+    let secretWord = '';
+
+    switch( actionType ){
+        case FORGOT_PASSWORD:
+            secretWord = FORGOT_PASS_ACTION_SECRET;
+            break;
+
+        default:
+            throw new CustomError( 'Wrong action type',500 );
+    }
+    return jwt.verify( token,secretWord );
 }
 
 function checkAccessToken( token = '' ) {
@@ -39,6 +73,8 @@ function checkRefreshToken( token = '' ) {
 
 module.exports = {
     checkAccessToken,
+    checkActionToken,
     checkRefreshToken,
+    generateActionToken,
     generateAuthTokens,
 };

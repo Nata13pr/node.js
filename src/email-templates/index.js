@@ -8,7 +8,7 @@ module.exports = {
 
     [emailActions.FORGOT_PASSWORD] : {
         subject : 'Ooops look like you forgot password',
-        template : 'forgot.password',
+        template : 'forgot-password',
     },
 
     [emailActions.USER_BANNED] : {

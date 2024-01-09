@@ -1,8 +1,10 @@
+const ActionToken = require( '../dataBase/ActionToken' );
 const OAuth = require( '../dataBase/OAuth' );
 const CError = require( '../error/CustomError' );
 const {
     checkAccessToken,
     checkRefreshToken,
+    checkActionToken,
 } = require( '../services/token.service' );
 
 module.exports = {
@@ -56,4 +58,27 @@ module.exports = {
             next( e );
         }
     },
+        checkActionToken : ( actionType ) => async( req,res,next ) => {
+            try{
+                const action_token = req.get( 'Authorization' );
+
+                if( !action_token ){
+                    throw new CError( 'No token',401 );
+                }
+
+                checkActionToken( action_token,actionType );
+
+                const tokenInfo = await ActionToken.findOne( {
+                    token : action_token,
+                } ).populate( 'carId' );
+
+                if( !tokenInfo ){
+                    throw new CError( 'Token not valid',401 );
+                }
+                req.car = tokenInfo.carId;
+                next();
+            }catch( e ){
+                next( e );
+            }
+        }
 };

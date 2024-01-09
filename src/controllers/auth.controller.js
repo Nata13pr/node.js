@@ -1,22 +1,24 @@
-const { WELCOME } = require( '../constants/email.action.enum' );
+const { WELCOME,FORGOT_PASSWORD } = require( '../constants/email.action.enum' );
+const ActionToken = require( '../dataBase/ActionToken' );
+const Car = require( '../dataBase/Car' );
 const OAuth = require( '../dataBase/OAuth' );
 const emailService = require( '../services/email.service' );
 const passwordService = require( '../services/password.service' );
-const { generateAuthTokens } = require( '../services/token.service' );
+const { generateAuthTokens,generateActionToken } = require( '../services/token.service' );
 
 module.exports = {
     login : async ( req, res, next ) => {
         try {
-            const { password : hashPassword, _id,name } = req.car;
+            const { password : hashPassword, _id,brand } = req.car;
             const { password } = req.body;
 
             await emailService.sendEmail( 'nata13pr@gmail.com',WELCOME,{
-                userName : name,
+                userBrand : brand,
             } );
 
             await passwordService.comparePassword( hashPassword, password );
 
-            await OAuth.deleteMany( { carId : _id } );
+             // await OAuth.deleteMany( { carId : _id } );
 
             const tokens = generateAuthTokens();
 
@@ -33,6 +35,48 @@ module.exports = {
             next( e );
         }
     },
+    forgotPassword : async( req,res,next ) => {
+      try{
+          const{ _id,brand } = req.car;
+          const token = generateActionToken( FORGOT_PASSWORD,{ brand,_id } );
+
+await ActionToken.create( {
+    carId : _id,
+    token,
+    actionType : FORGOT_PASSWORD,
+} );
+
+          await emailService.sendEmail( 'nata13pr@gmail.com',FORGOT_PASSWORD,{
+              userBrand : brand,
+              token,
+          } );
+          res.json( 'ok' );
+      }catch( e ){
+          next( e );
+      }
+    },
+    setForgotPassword : async( req,res,next ) => {
+        try {
+            const { _id } = req.car;
+            const { password } = req.body;
+
+            const hashPassword = await passwordService.hashPassword( password );
+            const updatedCar = await Car.findByIdAndUpdate(
+                _id,
+                { password : hashPassword },
+                { new : true }
+            );
+
+            await ActionToken.deleteOne( {
+                actionType : FORGOT_PASSWORD,
+                carId : _id,
+            } );
+            res.json( updatedCar );
+        }catch( e ){
+                next( e );
+            }
+        },
+
     refreshToken : async ( req, res, next ) => {
         try {
             const { refresh_token } = req.car;
