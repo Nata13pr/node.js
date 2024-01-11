@@ -13,4 +13,6 @@ carRouter.post(
 );
 carRouter.post( '/password/forgot',carMdlwr.checkIsCarPresent,authController.forgotPassword );
  carRouter.post( '/password/forgot/set',authMdlwr.checkActionToken( FORGOT_PASSWORD ),authController.setForgotPassword );
-module.exports = carRouter;
+carRouter.post( '/account-blocked',carMdlwr.checkIsCarPresent, authController.accountBlocked );
+
+ module.exports = carRouter;

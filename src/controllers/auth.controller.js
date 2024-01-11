@@ -1,4 +1,4 @@
-const { WELCOME,FORGOT_PASSWORD } = require( '../constants/email.action.enum' );
+const { WELCOME,FORGOT_PASSWORD,USER_BANNED } = require( '../constants/email.action.enum' );
 const ActionToken = require( '../dataBase/ActionToken' );
 const Car = require( '../dataBase/Car' );
 const OAuth = require( '../dataBase/OAuth' );
@@ -105,4 +105,18 @@ await ActionToken.create( {
             next( e );
         }
     },
+
+   accountBlocked : async( req,res,next ) => {
+        try{
+            const { brand } = req.car;
+
+      await emailService.sendEmail( 'nata13pr@gmail.com',USER_BANNED,{
+       userBrand : brand
+      } );
+
+            res.json( 'Account blocked' );
+        }catch( e ){
+            next( e );
+        }
+}
 };
