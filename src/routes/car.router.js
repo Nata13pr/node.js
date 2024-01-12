@@ -6,7 +6,7 @@ const carMdlwr = require( '../middlewares/car.middleware' );
 
 carRouter.get( '/', carController.getAllCars );
 carRouter.post( '/',  carMdlwr.isNewCarValid,
-    carMdlwr.isEmailRegistered,carMdlwr.checkCarOnCreate, carController.createCar );
+       carMdlwr.isEmailRegistered,carMdlwr.checkCarOnCreate, carController.createCar );
 carRouter.delete( '/:carId',authMdlwr.checkAccessToken,carMdlwr.checkIfCarAvailable,carMdlwr.checkCarById, carController.deleteCar );
 carRouter.put( '/:carId',authMdlwr.checkAccessToken,carMdlwr.checkIfCarAvailable,carMdlwr.checkCarById, carController.updateCar );
 carRouter.get( '/:carId',authMdlwr.checkAccessToken,carMdlwr.checkCarById,carMdlwr.checkIfCarAvailable, carController.getById );

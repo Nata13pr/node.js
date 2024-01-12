@@ -1,4 +1,4 @@
-const { WELCOME,FORGOT_PASSWORD,USER_BANNED } = require( '../constants/email.action.enum' );
+const { WELCOME,FORGOT_PASSWORD,USER_BANNED,LOGOUT } = require( '../constants/email.action.enum' );
 const ActionToken = require( '../dataBase/ActionToken' );
 const Car = require( '../dataBase/Car' );
 const OAuth = require( '../dataBase/OAuth' );
@@ -7,116 +7,154 @@ const passwordService = require( '../services/password.service' );
 const { generateAuthTokens,generateActionToken } = require( '../services/token.service' );
 
 module.exports = {
-    login : async ( req, res, next ) => {
-        try {
-            const { password : hashPassword, _id,brand } = req.car;
-            const { password } = req.body;
+       login : async ( req, res, next ) => {
+              try {
+                     const { password : hashPassword, _id,brand } = req.car;
+                     const { password } = req.body;
 
-            await emailService.sendEmail( 'nata13pr@gmail.com',WELCOME,{
-                userBrand : brand,
-            } );
+                     await emailService.sendEmail( 'nata13pr@gmail.com',WELCOME,{
+                            userBrand : brand,
+                     } );
 
-            await passwordService.comparePassword( hashPassword, password );
+                     await passwordService.comparePassword( hashPassword, password );
 
-             // await OAuth.deleteMany( { carId : _id } );
+                     // await OAuth.deleteMany( { carId : _id } );
 
-            const tokens = generateAuthTokens();
+                     const tokens = generateAuthTokens();
 
-            await OAuth.create( {
-                carId : _id,
-                ...tokens,
-            } );
+                     await OAuth.create( {
+                            carId : _id,
+                            ...tokens,
+                     } );
 
-            res.json( {
-                car : req.car,
-                ...tokens,
-            } );
-        } catch ( e ) {
-            next( e );
-        }
-    },
-    forgotPassword : async( req,res,next ) => {
-      try{
-          const{ _id,brand } = req.car;
-          const token = generateActionToken( FORGOT_PASSWORD,{ brand,_id } );
+                     res.json( {
+                            car : req.car,
+                            ...tokens,
+                     } );
+              } catch ( e ) {
+                     next( e );
+              }
+       },
+       forgotPassword : async( req,res,next ) => {
+              try{
+                     const{ _id,brand } = req.car;
+                     const token = generateActionToken( FORGOT_PASSWORD,{ brand,_id } );
 
-await ActionToken.create( {
-    carId : _id,
-    token,
-    actionType : FORGOT_PASSWORD,
-} );
+                     await ActionToken.create( {
+                            carId : _id,
+                            token,
+                            actionType : FORGOT_PASSWORD,
+                     } );
 
-          await emailService.sendEmail( 'nata13pr@gmail.com',FORGOT_PASSWORD,{
-              userBrand : brand,
-              token,
-          } );
-          res.json( 'ok' );
-      }catch( e ){
-          next( e );
-      }
-    },
-    setForgotPassword : async( req,res,next ) => {
-        try {
-            const { _id } = req.car;
-            const { password } = req.body;
+                     await emailService.sendEmail( 'nata13pr@gmail.com',FORGOT_PASSWORD,{
+                            userBrand : brand,
+                            token,
+                     } );
+                     res.json( 'ok' );
+              }catch( e ){
+                     next( e );
+              }
+       },
+       setForgotPassword : async( req,res,next ) => {
+              try {
+                     const { _id } = req.car;
+                     const { password } = req.body;
 
-            const hashPassword = await passwordService.hashPassword( password );
-            const updatedCar = await Car.findByIdAndUpdate(
-                _id,
-                { password : hashPassword },
-                { new : true }
-            );
+                     const hashPassword = await passwordService.hashPassword( password );
+                     const updatedCar = await Car.findByIdAndUpdate(
+                            _id,
+                            { password : hashPassword },
+                            { new : true }
+                     );
 
-            await ActionToken.deleteOne( {
-                actionType : FORGOT_PASSWORD,
-                carId : _id,
-            } );
-            res.json( updatedCar );
-        }catch( e ){
-                next( e );
-            }
-        },
+                     await ActionToken.deleteOne( {
+                            actionType : FORGOT_PASSWORD,
+                            carId : _id,
+                     } );
+                     res.json( updatedCar );
+              }catch( e ){
+                     next( e );
+              }
+       },
 
-    refreshToken : async ( req, res, next ) => {
-        try {
-            const { refresh_token } = req.car;
+       refreshToken : async ( req, res, next ) => {
+              try {
+                     const { refresh_token } = req.car;
 
-            const tokenInfo = await OAuth.findOne( { refresh_token } ).populate( 'carId' );
-            if ( !tokenInfo ) {
-                return res.status( 401 ).json( { error : 'Invalid refresh token' } );
-            }
+                     const tokenInfo = await OAuth.findOne( { refresh_token } ).populate( 'carId' );
+                     if ( !tokenInfo ) {
+                            return res.status( 401 ).json( { error : 'Invalid refresh token' } );
+                     }
 
-            const { carId } = tokenInfo;
+                     const { carId } = tokenInfo;
 
-            await OAuth.findOneAndDelete( { refresh_token } );
+                     await OAuth.findOneAndDelete( { refresh_token } );
 
-            const tokens = generateAuthTokens();
+                     const tokens = generateAuthTokens();
 
-            await OAuth.create( {
-                carId : carId,
-                ...tokens,
-            } );
+                     await OAuth.create( {
+                            carId : carId,
+                            ...tokens,
+                     } );
 
-            res.json( {
-                car : req.carId,
-                ...tokens,
-            } );
-        } catch ( e ) {
-            next( e );
-        }
-    },
+                     res.json( {
+                            car : req.carId,
+                            ...tokens,
+                     } );
+              } catch ( e ) {
+                     next( e );
+              }
+       },
+       logout : async( req,res,next ) => {
+              try{
 
-   accountBlocked : async( req,res,next ) => {
-        try{
-            const { brand } = req.car;
+                     const{ access_token,car } = req;
+                     const { brand } = car;
 
-      await emailService.sendEmail( 'nata13pr@gmail.com',USER_BANNED,{
-       userBrand : brand
-      } );
 
-            res.json( 'Account blocked' );
-        }catch( e ){
-            next( e );
-        }
-}
+                     await OAuth.deleteOne( { access_token } );
+
+                     await emailService.sendEmail( 'nata13pr@gmail.com',LOGOUT,{
+                            brand,
+                            count : 1,
+                     } );
+                     res.sendStatus( 204 );
+              }catch( e ){
+                     next( e );
+              }
+       },
+       logoutAllDevices : async( req,res,next ) => {
+              try{
+                     const{ _id,brand } = req.car;
+
+                     const  { deletedCount } = await OAuth.deleteMany( { carId : _id } );
+
+                     await emailService.sendEmail( 'nata13pr@gmail.com',LOGOUT,{
+                            brand,
+                            count : deletedCount
+                     } );
+                     res.sendStatus( 204 );
+              }catch( e ){
+                     next( e );
+              }
+       },
+       accountBlocked : async( req,res,next ) => {
+              try{
+                     const{ access_token,car } = req;
+                     const{ _id,brand } = car;
+                     await OAuth.deleteOne( { access_token } );
+
+
+                     await emailService.sendEmail( 'nata13pr@gmail.com',USER_BANNED,{
+                            userBrand : brand,
+                     } );
+                     const updatedCar = await Car.findByIdAndUpdate(
+                            _id,
+                            { blocked : true }
+                     );
+                     res.json( updatedCar );
+              }catch( e ){
+                     next( e );
+              }
+       }
 };
